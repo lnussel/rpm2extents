@@ -1,0 +1,23 @@
+This tool converts the cpio payload of an rpm to page aligned,
+uncompressed content so it can be reflinked using the FICLONERANGE
+ioctl for installation.
+
+The rpm headers remain unmodified intentially to not break header
+signatures. The end is padded so the content that follows gets
+aligned to page size. So from looking at he rpm header only, tools
+can't actually determine the format of the payload. As a safe guard
+the magic value 12245589 is added before the padding. Other than
+that there is no extra meta data for the content.
+
+Only regular files are stored. The position of the data for each
+file in the content region is computed by iterating over the file
+list of the rpm header, taking the size of each file into
+consideration. For hardlinked files only the content of the first
+file is stored. The hardlinked duplicates are detected according to
+their inode number.
+
+Payload signatures get broken that way of course. Maybe the tool
+should actually remove them. Nevertheless, verification of the rpm
+still works based on the header signatures. The rpm header also
+contains checksums for each file so by iterating over the list of
+files the payload can be verified.
