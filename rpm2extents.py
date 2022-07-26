@@ -144,8 +144,12 @@ def main(args):
                     or tags[RPMTAG_PAYLOADFORMAT] != 'cpio':
                 raise Exception("{}: unsupported payload {}.{}".format(tags[RPMTAG_NAME], tags[RPMTAG_PAYLOADFORMAT], tags[RPMTAG_PAYLOADCOMPRESSOR]))
 
-            ofn = os.path.join(args.output, os.path.basename(fn))
-            ofh = open(ofn, 'w+b')
+            if args.output:
+                ofn = os.path.join(args.output, os.path.basename(fn))
+                ofh = open(ofn, 'w+b')
+            else:
+                ofh = sys.stdout.buffer
+                ofn = os.path.basename(fn)
             fh.seek(0, os.SEEK_SET)
             ofh.write(fh.read(datastart+cntdata))
             # marker XXX: add another rpm header instead or add tag
@@ -263,7 +267,7 @@ if __name__ == '__main__':
     parser.add_argument("--dry", action="store_true", help="dry run")
     parser.add_argument("--debug", action="store_true", help="debug output")
     parser.add_argument("--verbose", action="store_true", help="verbose")
-    parser.add_argument("--output", help="output directory", required=True)
+    parser.add_argument("--output", help="output directory")
     parser.add_argument("file", nargs='*', help="some file name")
 
     args = parser.parse_args()
